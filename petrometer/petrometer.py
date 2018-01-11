@@ -67,7 +67,7 @@ class Petrometer:
         table.set_deco(Texttable.HEADER)
         table.set_cols_dtype(['t', 't', 't', 't', 't'])
         table.set_cols_align(['l', 'r', 'r', 'r', 'r'])
-        table.set_cols_width([11, 15, 20, 30, 30])
+        table.set_cols_width([11, 15, 25, 30, 30])
         table.add_rows([["Day", "# transactions", "Average gas price", "Average gas cost", "Total gas cost"]] + list(table_data()))
 
         print("")
@@ -85,11 +85,7 @@ class Petrometer:
         return numpy.mean(list(map(self.gas_cost, transactions))) / 10 ** 18
 
     def total_gas_cost(self, transactions):
-        result = 0
-        for x in map(self.gas_cost, transactions):
-            result += x
-        return result / 10 ** 18
-        # return numpy.sum(list(map(self.gas_cost, transactions))) / 10 ** 18
+        return sum(list(map(self.gas_cost, transactions))) / 10 ** 18
 
     @staticmethod
     def by_day(transaction: dict):
