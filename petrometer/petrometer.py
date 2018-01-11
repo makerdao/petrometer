@@ -80,7 +80,7 @@ class Petrometer:
         return numpy.mean(list(map(self.gas_cost, transactions))) / 10 ** 18
 
     def total_gas_cost(self, transactions):
-        return sum(list(map(self.gas_cost, transactions))) / 10 ** 18
+        return sum(map(self.gas_cost, transactions)) / 10 ** 18
 
     @staticmethod
     def by_day(transaction: dict):
