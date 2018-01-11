@@ -96,38 +96,33 @@ class Petrometer:
         return int(transaction['gasUsed']) * int(transaction['gasPrice'])
 
     def get_transactions(self) -> list:
-        db = self.get_db()
+        with self.get_db() as db:
+            print(f"Found {len(db.all())} transactions for '{self.arguments.address}' in local cache.")
+            print(f"Fetching new transactions from etherscan.io...")
 
-        print(f"Found {len(db.all())} transactions for '{self.arguments.address}' in local cache.")
-        print(f"Fetching new transactions from etherscan.io...")
+            while True:
+                # Get all existing transactions in the db
+                all_transactions = db.all()
+                max_block_number = max(map(lambda tx: int(tx['blockNumber']), all_transactions)) \
+                    if len(all_transactions) > 0 else 0
 
-        while True:
-            # Get all existing transactions in the db
-            all_transactions = db.all()
-            max_block_number = max(map(lambda tx: int(tx['blockNumber']), all_transactions)) \
-                if len(all_transactions) > 0 else 0
+                # Fetch a new batch of transactions
+                new_transactions_found = 0
+                new_transactions = self.fetch_transactions(max_block_number)
+                for transaction in new_transactions:
+                    Tx = Query()
+                    if len(db.search(Tx.hash == transaction['hash'])) == 0:
+                        db.insert(transaction)
+                        new_transactions_found += 1
 
-            # Fetch a new batch of transactions
-            new_transactions_found = 0
-            new_transactions = self.fetch_transactions(max_block_number)
-            for transaction in new_transactions:
-                Tx = Query()
-                if len(db.search(Tx.hash == transaction['hash'])) == 0:
-                    db.insert(transaction)
-                    new_transactions_found += 1
+                # We carry on until no new transactions are being discovered
+                if new_transactions_found > 0:
+                    print(f"Fetched {new_transactions_found} new transactions (block number #{max_block_number})...")
+                else:
+                    print(f"All new transactions fetched from etherscan.io.")
+                    break
 
-            # We carry on until no new transactions are being discovered
-            if new_transactions_found > 0:
-                print(f"Fetched {new_transactions_found} new transactions (block number #{max_block_number})...")
-            else:
-                print(f"All new transactions fetched from etherscan.io.")
-                break
-
-        all_transactions = db.all()
-
-        db.close()
-
-        return all_transactions
+            return db.all()
 
     def get_db(self):
         db_folder = user_cache_dir("petrometer", "maker")
