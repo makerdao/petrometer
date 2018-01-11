@@ -51,17 +51,11 @@ class Petrometer:
             for day, day_transactions in groupby(transactions, self.by_day):
                 day_transactions = list(day_transactions)
 
-                # Calculate some values
-                no_of_transactions = len(day_transactions)
-                avg_gas_price = self.avg_gas_price(day_transactions)
-                avg_gas_cost = self.avg_gas_cost(day_transactions)
-                total_gas_cost = self.total_gas_cost(day_transactions)
-
                 yield [day.strftime('%Y-%m-%d'),
-                       no_of_transactions,
-                       "%.1f GWei" % avg_gas_price,
-                       "%.18f ETH" % avg_gas_cost,
-                       "%.18f ETH" % total_gas_cost]
+                       (len(day_transactions)),
+                       "%.1f GWei" % self.avg_gas_price(day_transactions),
+                       "%.18f ETH" % self.avg_gas_cost(day_transactions),
+                       "%.18f ETH" % self.total_gas_cost(day_transactions)]
 
         table = Texttable(max_width=250)
         table.set_deco(Texttable.HEADER)
