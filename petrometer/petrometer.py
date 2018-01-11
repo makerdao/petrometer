@@ -70,13 +70,14 @@ class Petrometer:
         table.set_cols_width([11, 15, 25, 30, 30])
         table.add_rows([["Day", "# transactions", "Average gas price", "Average gas cost", "Total gas cost"]] + list(table_data()))
 
-        print("")
+        print(f"")
         print(f"Gas usage summary for: {self.arguments.address}")
-        print("")
+        print(f"")
         print(table.draw())
-        print("")
-        print("Total gas cost: %.18f ETH" % self.total_gas_cost(transactions))
-        print("")
+        print(f"")
+        print(f"Number of transactions: {len(transactions)}")
+        print(f"Total gas cost: %.18f ETH" % self.total_gas_cost(transactions))
+        print(f"")
 
     def avg_gas_price(self, transactions):
         return numpy.mean(list(map(self.gas_price, transactions))) / 10 ** 9
@@ -133,8 +134,6 @@ class Petrometer:
         all_transactions = db.all()
 
         db.close()
-
-        print(f"Total number of transactions: {len(all_transactions)}.")
 
         return all_transactions
 
