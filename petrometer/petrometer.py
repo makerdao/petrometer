@@ -99,9 +99,7 @@ class Petrometer:
 
     @staticmethod
     def gas_cost(transaction: dict) -> int:
-        x = int(transaction['gasUsed']) * int(transaction['gasPrice'])
-        assert(x > 0)
-        return x
+        return int(transaction['gasUsed']) * int(transaction['gasPrice'])
 
     def get_transactions(self) -> list:
         db = self.get_db()
