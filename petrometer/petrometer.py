@@ -37,22 +37,9 @@ class Petrometer:
         self.arguments = parser.parse_args(args)
         self.db = self.get_db()
 
-        # exit(-1)
-
-        # self.web3 = kwargs['web3'] if 'web3' in kwargs else Web3(HTTPProvider(endpoint_uri=f"http://{self.arguments.rpc_host}:{self.arguments.rpc_port}",
-        #                                                                       request_kwargs={"timeout": self.arguments.rpc_timeout}))
-        # self.web3.eth.defaultAccount = self.arguments.eth_from
-        # self.our_address = Address(self.arguments.eth_from)
-        # self.tub = Tub(web3=self.web3, address=Address(self.arguments.tub_address))
-
-        # logging.basicConfig(format='%(asctime)-15s %(levelname)-8s %(message)s',
-        #                     level=(logging.DEBUG if self.arguments.debug else logging.INFO))
-
     def main(self):
         self.refresh_transactions()
-        pass
-        # with Web3Lifecycle(self.web3) as lifecycle:
-        #     lifecycle.on_block(self.check_all_cups)
+        self.db.close()
 
     def get_db(self):
         db_folder = user_cache_dir("petrometer", "maker")
@@ -67,28 +54,31 @@ class Petrometer:
         return TinyDB(db_file, storage=CachingMiddleware(JSONStorage))
 
     def refresh_transactions(self):
-        print(f"Fetching transactions for '{self.arguments.address}' from etherscan.io...")
+        print(f"Found {len(self.db.all())} transactions for '{self.arguments.address}' in local cache.")
+        print(f"Fetching new transactions from etherscan.io...")
 
         while True:
             # Get all existing transactions in the db
             all_transactions = self.db.all()
-            max_block_number = max(filter(lambda tx: tx['blockNumber'], all_transactions)) if len(all_transactions) > 0 else 0
+            max_block_number = max(map(lambda tx: int(tx['blockNumber']), all_transactions)) if len(all_transactions) > 0 else 0
 
             # Fetch a new batch of transactions
             new_transactions_found = 0
-            for transaction in self.get_transactions(max_block_number):
+            transactions = self.get_transactions(max_block_number)
+            for transaction in transactions:
                 Tx = Query()
                 if len(self.db.search(Tx.hash == transaction['hash'])) == 0:
                     self.db.insert(transaction)
                     new_transactions_found += 1
 
-            print(f"Fetched {new_transactions_found} new transactions...")
-
             # We carry on until no new transactions are being discovered
-            if len(new_transactions_found) == 0:
+            if new_transactions_found == 0:
                 break
+            else:
+                print(f"Fetched {new_transactions_found} new transactions...")
 
-        print(f"All transactions for '{self.arguments.address}' fetched from etherscan.io.")
+        print(f"All new transactions fetched from etherscan.io.")
+        print(f"Total number of transactions: {len(self.db.all())}.")
 
     def get_transactions(self, start_block: int):
         assert(isinstance(start_block, int))
@@ -106,7 +96,12 @@ class Petrometer:
         # Always wait some time before sending a request as we do not want to be banned by etherscan.io
         time.sleep(0.3)
 
-        return requests.get(url).json()
+        result = requests.get(url).json()
+
+        if result['message'] != 'OK':
+            raise Exception(f"Invalid etherscan.io response: {result}")
+
+        return result['result']
 
 
 if __name__ == '__main__':
