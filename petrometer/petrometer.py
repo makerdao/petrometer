@@ -152,7 +152,7 @@ class Petrometer:
         # Always wait some time before sending a request as we do not want to be banned by etherscan.io
         time.sleep(0.3)
 
-        result = requests.get(url).json()
+        result = requests.get(url, timeout=26).json()
         if result['message'] != 'OK':
             raise Exception(f"Invalid etherscan.io response: {result}")
 
