@@ -33,13 +33,12 @@ pip3 install -r requirements.txt
 ```
 usage: petrometer [-h] --etherscan-api-key ETHERSCAN_API_KEY address
 
-positional arguments:
-  address               Ethereum address to get the gas usage of
+arguments:
+  --etherscan-api-key ETHERSCAN_API_KEY    Etherscan API key
+  address                                  Ethereum address to get the gas usage of
 
 optional arguments:
   -h, --help            show this help message and exit
-  --etherscan-api-key ETHERSCAN_API_KEY
-                        Etherscan API key
 ```
 
 Sample invocation:
