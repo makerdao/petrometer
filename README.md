@@ -11,8 +11,9 @@ much more effective than querying an Ethereum node directly. What even more, it 
 data between invocations and only downloads new transactions when run again. Thanks to `appdirs`
 (<https://pypi.python.org/pypi/appdirs>), standard OS locations are used for storing cached data.
 
-You do need an etherscan.io API key in order to use this tool, it needs to be passed as the
-`--etherscan-api-key` parameter.
+You do need an etherscan.io API key (<https://etherscan.io/apis>) in order to use this tool,
+it needs to be passed as the `--etherscan-api-key` parameter. You need to create an etherscan.io
+account (<https://etherscan.io/register>) in order to be able to generate an API key.
 
 <https://chat.makerdao.com/channel/keeper>
 
