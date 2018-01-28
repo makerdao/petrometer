@@ -47,8 +47,8 @@ class Petrometer:
         self.print_daily_gas_usage(transactions)
 
     def print_daily_gas_usage(self, transactions):
-        def table_data():
-            for day, day_transactions in groupby(transactions, self.by_day):
+        def table_data(outgoing_transactions: list):
+            for day, day_transactions in groupby(outgoing_transactions, self.by_day):
                 day_transactions = list(day_transactions)
 
                 yield [day.strftime('%Y-%m-%d'),
@@ -57,19 +57,22 @@ class Petrometer:
                        "%.18f ETH" % self.avg_gas_cost(day_transactions),
                        "%.18f ETH" % self.total_gas_cost(day_transactions)]
 
+        outgoing_transactions = list(filter(lambda tx: tx['from'].lower() == self.arguments.address.lower(), transactions))
+
         table = Texttable(max_width=250)
         table.set_deco(Texttable.HEADER)
         table.set_cols_dtype(['t', 't', 't', 't', 't'])
         table.set_cols_align(['l', 'r', 'r', 'r', 'r'])
         table.set_cols_width([11, 15, 25, 30, 30])
-        table.add_rows([["Day", "# transactions", "Average gas price", "Average gas cost", "Total gas cost"]] + list(table_data()))
+        table.add_rows([["Day", "# transactions", "Average gas price", "Average gas cost", "Total gas cost"]]
+                       + list(table_data(outgoing_transactions)))
 
         print(f"")
         print(f"Gas usage summary for: {self.arguments.address}")
         print(f"")
         print(table.draw())
         print(f"")
-        print(f"Number of transactions: {len(transactions)}")
+        print(f"Number of transactions: {len(outgoing_transactions)}")
         print(f"Total gas cost: %.18f ETH" % self.total_gas_cost(transactions))
         print(f"")
 
