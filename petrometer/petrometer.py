@@ -35,7 +35,7 @@ from tinydb.middlewares import CachingMiddleware
 
 
 class Petrometer:
-    def __init__(self, args: list, **kwargs):
+    def __init__(self, args: list):
         parser = argparse.ArgumentParser(prog='petrometer')
         parser.add_argument("address", help="Ethereum address to get the gas usage of", type=str)
         parser.add_argument("--etherscan-api-key", help="Etherscan API key", required=True, type=str)
