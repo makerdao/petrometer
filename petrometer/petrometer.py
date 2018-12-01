@@ -137,8 +137,8 @@ class Petrometer:
 
     def get_transactions(self, address: str) -> list:
         with self.get_db(address) as db:
-            print(f"Found {len(db.all())} transactions for '{address}' in local cache.")
-            print(f"Fetching new transactions from etherscan.io...")
+            print(f"Found {len(db.all())} transactions for '{address}' in local cache.", file=sys.stderr)
+            print(f"Fetching new transactions from etherscan.io...", file=sys.stderr)
 
             while True:
                 # Get all existing transactions in the db
@@ -159,9 +159,9 @@ class Petrometer:
 
                 # We carry on until no new transactions are being discovered
                 if len(new_transactions) > 0:
-                    print(f"Fetched {len(new_transactions)} new transactions (block number #{max_block_number})...")
+                    print(f"Fetched {len(new_transactions)} new transactions (block number #{max_block_number})...", file=sys.stderr)
                 else:
-                    print(f"All new transactions fetched from etherscan.io.")
+                    print(f"All new transactions fetched from etherscan.io.", file=sys.stderr)
                     break
 
             return list(filter(lambda tx: tx['from'].lower() == address.lower(), db.all()))
