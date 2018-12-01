@@ -106,21 +106,23 @@ class Petrometer:
             while True:
                 # Get all existing transactions in the db
                 all_transactions = db.all()
+                existing_hashes = set(map(lambda tx: tx['hash'], all_transactions))
                 max_block_number = max(map(lambda tx: int(tx['blockNumber']), all_transactions)) \
                     if len(all_transactions) > 0 else 0
 
-                # Fetch a new batch of transactions
-                new_transactions_found = 0
-                new_transactions = self.fetch_transactions(max_block_number)
-                for transaction in new_transactions:
-                    Tx = Query()
-                    if len(db.search(Tx.hash == transaction['hash'])) == 0:
-                        db.insert(transaction)
-                        new_transactions_found += 1
+                # Fetch a new batch of transactions, select only the new ones
+                new_transactions = []
+                for transaction in self.fetch_transactions(max_block_number):
+                    if transaction['hash'] not in existing_hashes:
+                        existing_hashes.add(transaction['hash'])
+                        new_transactions.append(transaction)
+
+                # Insert new transactions into the db
+                db.insert_multiple(new_transactions)
 
                 # We carry on until no new transactions are being discovered
-                if new_transactions_found > 0:
-                    print(f"Fetched {new_transactions_found} new transactions (block number #{max_block_number})...")
+                if len(new_transactions) > 0:
+                    print(f"Fetched {len(new_transactions)} new transactions (block number #{max_block_number})...")
                 else:
                     print(f"All new transactions fetched from etherscan.io.")
                     break
