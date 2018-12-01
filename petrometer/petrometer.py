@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+import csv
 import datetime
 import sys
 
@@ -33,6 +34,8 @@ from texttable import Texttable
 from tinydb import TinyDB, JSONStorage, Query
 from tinydb.middlewares import CachingMiddleware
 
+HTTP_TIMEOUT = 26
+
 
 class Petrometer:
     def __init__(self, args: list):
@@ -44,12 +47,15 @@ class Petrometer:
 
     def main(self):
         transactions = self.get_transactions()
-        self.print_daily_gas_usage(transactions)
+        eth_prices = self.get_eth_prices()
 
-    def print_daily_gas_usage(self, transactions):
+        self.print_daily_gas_usage(transactions, eth_prices)
+
+    def print_daily_gas_usage(self, transactions, eth_prices):
         def table_data(outgoing_transactions: list):
             for day, day_transactions in groupby(outgoing_transactions, self.by_day):
                 day_transactions = list(day_transactions)
+                day_eth_price = eth_prices.get(int(day.timestamp()))
 
                 yield [day.strftime('%Y-%m-%d'),
                        (len(day_transactions)),
@@ -57,16 +63,18 @@ class Petrometer:
                        "(%.1f %%)" % self.percentage(self.failed_transactions(day_transactions) / len(day_transactions)),
                        "%.1f GWei" % self.avg_gas_price(day_transactions),
                        "%.8f ETH" % self.avg_gas_cost(day_transactions),
-                       "%.8f ETH" % self.total_gas_cost(day_transactions)]
+                       ("($%.2f)" % (self.avg_gas_cost(day_transactions) * day_eth_price)) if day_eth_price is not None else "",
+                       "%.8f ETH" % self.total_gas_cost(day_transactions),
+                       ("($%.2f)" % (self.total_gas_cost(day_transactions) * day_eth_price)) if day_eth_price is not None else ""]
 
         outgoing_transactions = list(filter(lambda tx: tx['from'].lower() == self.arguments.address.lower(), transactions))
 
         table = Texttable(max_width=250)
         table.set_deco(Texttable.HEADER)
-        table.set_cols_dtype(['t', 't', 't', 't', 't', 't', 't'])
-        table.set_cols_align(['l', 'r', 'r', 'r', 'r', 'r', 'r'])
-        table.set_cols_width([11, 10, 10, 8, 25, 20, 20])
-        table.add_rows([["Day", "All tx", "Failed tx", "(%)", "Average gas price", "Average gas cost", "Total gas cost"]]
+        table.set_cols_dtype(['t', 't', 't', 't', 't', 't', 't', 't', 't'])
+        table.set_cols_align(['l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r'])
+        table.set_cols_width([11, 10, 10, 8, 25, 20, 8, 20, 11])
+        table.add_rows([["Day", "All tx", "Failed tx", "(%)", "Average gas price", "Average tx cost", "($)", "Total tx cost", "($)"]]
                        + list(table_data(outgoing_transactions)))
 
         print(f"")
@@ -167,11 +175,27 @@ class Petrometer:
         # Always wait some time before sending a request as we do not want to be banned by etherscan.io
         time.sleep(0.2)
 
-        result = requests.get(url, timeout=26).json()
+        result = requests.get(url, timeout=HTTP_TIMEOUT).json()
         if result['message'] != 'OK':
             raise Exception(f"Invalid etherscan.io response: {result}")
 
         return result['result']
+
+    @staticmethod
+    def get_eth_prices():
+        response = requests.get("https://etherscan.io/chart/etherprice?output=csv", timeout=HTTP_TIMEOUT)
+        if not response.ok:
+            raise Exception("Failed to fetch historical ETH prices from etherscan.io:"
+                            " {response.status_code} {response.reason} ({text})")
+
+        prices = {}
+
+        prices_reader = csv.reader(response.text.split("\n"))
+        for row in prices_reader:
+            if len(row) == 3 and row[2] != "Value":
+                prices[int(row[1])] = float(row[2])
+
+        return prices
 
 
 if __name__ == '__main__':
