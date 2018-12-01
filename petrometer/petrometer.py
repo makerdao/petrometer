@@ -53,6 +53,8 @@ class Petrometer:
 
                 yield [day.strftime('%Y-%m-%d'),
                        (len(day_transactions)),
+                       (self.failed_transactions(day_transactions)),
+                       "(%.1f %%)" % self.percentage(self.failed_transactions(day_transactions) / len(day_transactions)),
                        "%.1f GWei" % self.avg_gas_price(day_transactions),
                        "%.8f ETH" % self.avg_gas_cost(day_transactions),
                        "%.8f ETH" % self.total_gas_cost(day_transactions)]
@@ -61,10 +63,10 @@ class Petrometer:
 
         table = Texttable(max_width=250)
         table.set_deco(Texttable.HEADER)
-        table.set_cols_dtype(['t', 't', 't', 't', 't'])
-        table.set_cols_align(['l', 'r', 'r', 'r', 'r'])
-        table.set_cols_width([11, 15, 25, 20, 20])
-        table.add_rows([["Day", "# transactions", "Average gas price", "Average gas cost", "Total gas cost"]]
+        table.set_cols_dtype(['t', 't', 't', 't', 't', 't', 't'])
+        table.set_cols_align(['l', 'r', 'r', 'r', 'r', 'r', 'r'])
+        table.set_cols_width([11, 10, 10, 8, 25, 20, 20])
+        table.add_rows([["Day", "All tx", "Failed tx", "(%)", "Average gas price", "Average gas cost", "Total gas cost"]]
                        + list(table_data(outgoing_transactions)))
 
         print(f"")
@@ -75,6 +77,14 @@ class Petrometer:
         print(f"Number of transactions: {len(outgoing_transactions)}")
         print(f"Total gas cost: %.8f ETH" % self.total_gas_cost(transactions))
         print(f"")
+
+    @staticmethod
+    def failed_transactions(transactions):
+        return len(list(filter(lambda transaction: transaction['txreceipt_status'] == "0", transactions)))
+
+    @staticmethod
+    def percentage(ratio):
+        return ratio * 100.0
 
     def avg_gas_price(self, transactions):
         return numpy.mean(list(map(self.gas_price, transactions))) / 10 ** 9
