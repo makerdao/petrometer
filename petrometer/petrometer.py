@@ -155,7 +155,7 @@ class Petrometer:
               f"apikey={self.arguments.etherscan_api_key}"
 
         # Always wait some time before sending a request as we do not want to be banned by etherscan.io
-        time.sleep(0.3)
+        time.sleep(0.2)
 
         result = requests.get(url, timeout=26).json()
         if result['message'] != 'OK':
