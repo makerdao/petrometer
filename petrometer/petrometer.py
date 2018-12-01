@@ -54,8 +54,8 @@ class Petrometer:
                 yield [day.strftime('%Y-%m-%d'),
                        (len(day_transactions)),
                        "%.1f GWei" % self.avg_gas_price(day_transactions),
-                       "%.18f ETH" % self.avg_gas_cost(day_transactions),
-                       "%.18f ETH" % self.total_gas_cost(day_transactions)]
+                       "%.8f ETH" % self.avg_gas_cost(day_transactions),
+                       "%.8f ETH" % self.total_gas_cost(day_transactions)]
 
         outgoing_transactions = list(filter(lambda tx: tx['from'].lower() == self.arguments.address.lower(), transactions))
 
@@ -63,7 +63,7 @@ class Petrometer:
         table.set_deco(Texttable.HEADER)
         table.set_cols_dtype(['t', 't', 't', 't', 't'])
         table.set_cols_align(['l', 'r', 'r', 'r', 'r'])
-        table.set_cols_width([11, 15, 25, 30, 30])
+        table.set_cols_width([11, 15, 25, 20, 20])
         table.add_rows([["Day", "# transactions", "Average gas price", "Average gas cost", "Total gas cost"]]
                        + list(table_data(outgoing_transactions)))
 
@@ -73,7 +73,7 @@ class Petrometer:
         print(table.draw())
         print(f"")
         print(f"Number of transactions: {len(outgoing_transactions)}")
-        print(f"Total gas cost: %.18f ETH" % self.total_gas_cost(transactions))
+        print(f"Total gas cost: %.8f ETH" % self.total_gas_cost(transactions))
         print(f"")
 
     def avg_gas_price(self, transactions):
