@@ -23,7 +23,7 @@ import sys
 import os
 
 import errno
-from itertools import groupby
+from itertools import groupby, chain
 
 import numpy
 import pytz
@@ -41,20 +41,23 @@ HTTP_TIMEOUT = 26
 class Petrometer:
     def __init__(self, args: list):
         parser = argparse.ArgumentParser(prog='petrometer')
-        parser.add_argument("address", help="Ethereum address to get the gas usage of", type=str)
+        parser.add_argument("addresses", metavar='ADDRESSES', nargs='+', type=str,
+                            help="Ethereum addresses to get the gas usage of")
         parser.add_argument("--etherscan-api-key", help="Etherscan API key", required=True, type=str)
 
         self.arguments = parser.parse_args(args)
 
     def main(self):
-        transactions = self.get_transactions()
+        transactions = list(chain.from_iterable(self.get_transactions(address) for address in self.arguments.addresses))
         eth_prices = self.get_eth_prices()
 
         self.print_daily_gas_usage(transactions, eth_prices)
 
     def print_daily_gas_usage(self, transactions, eth_prices):
-        def table_data(outgoing_transactions: list):
-            for day, day_transactions in groupby(outgoing_transactions, self.by_day):
+        transactions = sorted(transactions, key=lambda tx: int(tx['timeStamp']))
+
+        def table_data():
+            for day, day_transactions in groupby(transactions, self.by_day):
                 day_transactions = list(day_transactions)
                 day_eth_price = eth_prices.get(int(day.timestamp()))
 
@@ -68,10 +71,10 @@ class Petrometer:
                        "%.8f ETH" % self.total_gas_cost(day_transactions),
                        ("(%s)" % self.format_usd(self.total_gas_cost(day_transactions) * day_eth_price)) if day_eth_price is not None else ""]
 
-        def total_usd_cost(outgoing_transactions: list):
+        def total_usd_cost():
             result = 0.0
 
-            for day, day_transactions in groupby(outgoing_transactions, self.by_day):
+            for day, day_transactions in groupby(transactions, self.by_day):
                 day_transactions = list(day_transactions)
                 day_eth_price = eth_prices.get(int(day.timestamp()))
                 if day_eth_price:
@@ -79,23 +82,23 @@ class Petrometer:
 
             return result
 
-        outgoing_transactions = list(filter(lambda tx: tx['from'].lower() == self.arguments.address.lower(), transactions))
-
         table = Texttable(max_width=250)
         table.set_deco(Texttable.HEADER)
         table.set_cols_dtype(['t', 't', 't', 't', 't', 't', 't', 't', 't'])
         table.set_cols_align(['l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r'])
-        table.set_cols_width([11, 10, 10, 8, 25, 20, 8, 20, 11])
+        table.set_cols_width([11, 10, 10, 8, 25, 20, 8, 20, 12])
         table.add_rows([["Day", "All tx", "Failed tx", "(%)", "Average gas price", "Average tx cost", "($)", "Total tx cost", "($)"]]
-                       + list(table_data(outgoing_transactions)))
+                       + list(table_data()))
+
+        addresses = ("\n" + 23 * " ").join(self.arguments.addresses)
 
         print(f"")
-        print(f"Gas usage summary for: {self.arguments.address}")
+        print(f"Gas usage summary for: {addresses}")
         print(f"")
         print(table.draw())
         print(f"")
-        print(f"Number of transactions: {len(outgoing_transactions)}")
-        print(f"Total gas cost: %.8f ETH" % self.total_gas_cost(outgoing_transactions) + " (" + self.format_usd(total_usd_cost(outgoing_transactions)) + ")")
+        print(f"Number of transactions: {len(transactions)}")
+        print(f"Total gas cost: %.8f ETH" % self.total_gas_cost(transactions) + " (" + self.format_usd(total_usd_cost()) + ")")
         print(f"")
 
     @staticmethod
@@ -132,9 +135,9 @@ class Petrometer:
     def format_usd(val):
         return format_decimal(val, format='$#,##0.00', locale='en_US')
 
-    def get_transactions(self) -> list:
-        with self.get_db() as db:
-            print(f"Found {len(db.all())} transactions for '{self.arguments.address}' in local cache.")
+    def get_transactions(self, address: str) -> list:
+        with self.get_db(address) as db:
+            print(f"Found {len(db.all())} transactions for '{address}' in local cache.")
             print(f"Fetching new transactions from etherscan.io...")
 
             while True:
@@ -146,7 +149,7 @@ class Petrometer:
 
                 # Fetch a new batch of transactions, select only the new ones
                 new_transactions = []
-                for transaction in self.fetch_transactions(max_block_number):
+                for transaction in self.fetch_transactions(address, max_block_number):
                     if transaction['hash'] not in existing_hashes:
                         existing_hashes.add(transaction['hash'])
                         new_transactions.append(transaction)
@@ -161,9 +164,10 @@ class Petrometer:
                     print(f"All new transactions fetched from etherscan.io.")
                     break
 
-            return db.all()
+            return list(filter(lambda tx: tx['from'].lower() == address.lower(), db.all()))
 
-    def get_db(self):
+    @staticmethod
+    def get_db(address: str):
         db_folder = user_cache_dir("petrometer", "maker")
 
         try:
@@ -172,15 +176,16 @@ class Petrometer:
             if e.errno != errno.EEXIST:
                 raise
 
-        db_file = os.path.join(db_folder, self.arguments.address.lower() + ".txdb")
+        db_file = os.path.join(db_folder, address.lower() + ".txdb")
         return TinyDB(db_file, storage=CachingMiddleware(JSONStorage))
 
-    def fetch_transactions(self, start_block: int) -> list:
+    def fetch_transactions(self, address: str, start_block: int) -> list:
+        assert(isinstance(address, str))
         assert(isinstance(start_block, int))
 
         url = f"https://api.etherscan.io/api?module=account&" \
               f"action=txlist&" \
-              f"address={self.arguments.address.lower()}&" \
+              f"address={address.lower()}&" \
               f"startblock={start_block}&" \
               f"endblock=99999999&" \
               f"page=1&" \
