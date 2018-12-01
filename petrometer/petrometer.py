@@ -67,6 +67,17 @@ class Petrometer:
                        "%.8f ETH" % self.total_gas_cost(day_transactions),
                        ("($%.2f)" % (self.total_gas_cost(day_transactions) * day_eth_price)) if day_eth_price is not None else ""]
 
+        def total_usd_cost(outgoing_transactions: list):
+            result = 0.0
+
+            for day, day_transactions in groupby(outgoing_transactions, self.by_day):
+                day_transactions = list(day_transactions)
+                day_eth_price = eth_prices.get(int(day.timestamp()))
+                if day_eth_price:
+                    result += self.total_gas_cost(day_transactions) * day_eth_price
+
+            return result
+
         outgoing_transactions = list(filter(lambda tx: tx['from'].lower() == self.arguments.address.lower(), transactions))
 
         table = Texttable(max_width=250)
@@ -83,7 +94,7 @@ class Petrometer:
         print(table.draw())
         print(f"")
         print(f"Number of transactions: {len(outgoing_transactions)}")
-        print(f"Total gas cost: %.8f ETH" % self.total_gas_cost(transactions))
+        print(f"Total gas cost: %.8f ETH" % self.total_gas_cost(outgoing_transactions) + " ($%.2f)" % total_usd_cost(outgoing_transactions))
         print(f"")
 
     @staticmethod
