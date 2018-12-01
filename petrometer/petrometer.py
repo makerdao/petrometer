@@ -64,7 +64,7 @@ class Petrometer:
                 yield [day.strftime('%Y-%m-%d'),
                        (len(day_transactions)),
                        (self.failed_transactions(day_transactions)),
-                       "(%.1f %%)" % self.percentage(self.failed_transactions(day_transactions) / len(day_transactions)),
+                       "(%.1f%%)" % self.percentage(self.failed_transactions(day_transactions) / len(day_transactions)),
                        "%.1f GWei" % self.avg_gas_price(day_transactions),
                        "%.8f ETH" % self.avg_gas_cost(day_transactions),
                        ("(%s)" % self.format_usd(self.avg_gas_cost(day_transactions) * day_eth_price)) if day_eth_price is not None else "",
@@ -86,7 +86,7 @@ class Petrometer:
         table.set_deco(Texttable.HEADER)
         table.set_cols_dtype(['t', 't', 't', 't', 't', 't', 't', 't', 't'])
         table.set_cols_align(['l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r'])
-        table.set_cols_width([11, 10, 10, 8, 25, 20, 8, 20, 12])
+        table.set_cols_width([11, 10, 10, 7, 25, 20, 8, 20, 12])
         table.add_rows([["Day", "All tx", "Failed tx", "(%)", "Average gas price", "Average tx cost", "($)", "Total tx cost", "($)"]]
                        + list(table_data()))
 
