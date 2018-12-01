@@ -33,6 +33,7 @@ from appdirs import user_cache_dir
 from texttable import Texttable
 from tinydb import TinyDB, JSONStorage, Query
 from tinydb.middlewares import CachingMiddleware
+from babel.numbers import format_decimal
 
 HTTP_TIMEOUT = 26
 
@@ -63,9 +64,9 @@ class Petrometer:
                        "(%.1f %%)" % self.percentage(self.failed_transactions(day_transactions) / len(day_transactions)),
                        "%.1f GWei" % self.avg_gas_price(day_transactions),
                        "%.8f ETH" % self.avg_gas_cost(day_transactions),
-                       ("($%.2f)" % (self.avg_gas_cost(day_transactions) * day_eth_price)) if day_eth_price is not None else "",
+                       ("(%s)" % self.format_usd(self.avg_gas_cost(day_transactions) * day_eth_price)) if day_eth_price is not None else "",
                        "%.8f ETH" % self.total_gas_cost(day_transactions),
-                       ("($%.2f)" % (self.total_gas_cost(day_transactions) * day_eth_price)) if day_eth_price is not None else ""]
+                       ("(%s)" % self.format_usd(self.total_gas_cost(day_transactions) * day_eth_price)) if day_eth_price is not None else ""]
 
         def total_usd_cost(outgoing_transactions: list):
             result = 0.0
@@ -94,7 +95,7 @@ class Petrometer:
         print(table.draw())
         print(f"")
         print(f"Number of transactions: {len(outgoing_transactions)}")
-        print(f"Total gas cost: %.8f ETH" % self.total_gas_cost(outgoing_transactions) + " ($%.2f)" % total_usd_cost(outgoing_transactions))
+        print(f"Total gas cost: %.8f ETH" % self.total_gas_cost(outgoing_transactions) + " (" + self.format_usd(total_usd_cost(outgoing_transactions)) + ")")
         print(f"")
 
     @staticmethod
@@ -126,6 +127,10 @@ class Petrometer:
     @staticmethod
     def gas_cost(transaction: dict) -> int:
         return int(transaction['gasUsed']) * int(transaction['gasPrice'])
+
+    @staticmethod
+    def format_usd(val):
+        return format_decimal(val, format='$#,##0.00', locale='en_US')
 
     def get_transactions(self) -> list:
         with self.get_db() as db:
