@@ -44,6 +44,7 @@ class Petrometer:
         parser.add_argument("addresses", metavar='ADDRESSES', nargs='+', type=str,
                             help="Ethereum addresses to get the gas usage of")
         parser.add_argument("--etherscan-api-key", help="Etherscan API key", required=True, type=str)
+        parser.add_argument("-o", "--output", help="File to save the output to", required=False, type=str)
 
         self.arguments = parser.parse_args(args)
 
@@ -51,9 +52,16 @@ class Petrometer:
         transactions = list(chain.from_iterable(self.get_transactions(address) for address in self.arguments.addresses))
         eth_prices = self.get_eth_prices()
 
-        self.print_daily_gas_usage(transactions, eth_prices)
+        result = self.daily_gas_usage(transactions, eth_prices)
 
-    def print_daily_gas_usage(self, transactions, eth_prices):
+        if self.arguments.output is not None:
+            with open(self.arguments.output, "w") as file:
+                file.write(result)
+
+        else:
+            print(result)
+
+    def daily_gas_usage(self, transactions, eth_prices):
         transactions = sorted(transactions, key=lambda tx: int(tx['timeStamp']))
 
         def table_data():
@@ -92,14 +100,11 @@ class Petrometer:
 
         addresses = ("\n" + 23 * " ").join(self.arguments.addresses)
 
-        print(f"")
-        print(f"Gas usage summary for: {addresses}")
-        print(f"")
-        print(table.draw())
-        print(f"")
-        print(f"Number of transactions: {len(transactions)}")
-        print(f"Total gas cost: %.8f ETH" % self.total_gas_cost(transactions) + " (" + self.format_usd(total_usd_cost()) + ")")
-        print(f"")
+        return f"\n" + \
+               f"Gas usage summary for: {addresses}\n\n" + \
+               table.draw() + "\n\n" + \
+               f"Number of transactions: {len(transactions)}\n" + \
+               f"Total gas cost: %.8f ETH" % self.total_gas_cost(transactions) + " (" + self.format_usd(total_usd_cost()) + ")\n"
 
     @staticmethod
     def failed_transactions(transactions):
