@@ -103,7 +103,7 @@ Gas usage summary for: 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211
 2018-01-27            20            1     (5.0%)                    3.7 GWei         0.00889380 ETH    ($9.86)         0.17787595 ETH      ($197.28)
 
 Number of transactions: 71
-Total gas cost: 0.647682493999999997 ETH ($543.27)
+Total gas cost: 0.64768249 ETH ($543.27)
 
 """
 
@@ -134,6 +134,6 @@ Gas usage summary for: 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211
 2018-01-27            20            1     (5.0%)                    3.7 GWei         0.00889380 ETH    ($9.86)         0.17787595 ETH      ($197.28)
 
 Number of transactions: 71
-Total gas cost: 0.647682493999999997 ETH ($543.27)
+Total gas cost: 0.64768249 ETH ($543.27)
 
 """
