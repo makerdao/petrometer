@@ -66,7 +66,7 @@ class TestPlunger:
 
         # then
         assert "usage: petrometer" in err.getvalue()
-        assert "petrometer: error: the following arguments are required: address, --etherscan-api-key" in err.getvalue()
+        assert "petrometer: error: the following arguments are required: ADDRESS, --etherscan-api-key" in err.getvalue()
 
     def test_happy_path(self, datadir):
         # remove local cache file
