@@ -19,7 +19,7 @@ account (<https://etherscan.io/register>) in order to be able to generate an API
 
 ## Installation
 
-This project uses *Python 3.6.2*.
+This project uses *Python 3.6.6*.
 
 In order to clone the project and install required third-party packages please execute:
 ```
