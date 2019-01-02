@@ -202,10 +202,15 @@ class Petrometer:
         time.sleep(0.2)
 
         result = requests.get(url, timeout=HTTP_TIMEOUT).json()
-        if result['message'] != 'OK':
-            raise Exception(f"Invalid etherscan.io response: {result}")
 
-        return result['result']
+        if result['message'] == 'OK':
+            return result['result']
+
+        elif result['message'] == 'No transactions found':
+            return []
+
+        else:
+            raise Exception(f"Invalid etherscan.io response: {result}")
 
     @staticmethod
     def get_eth_prices():
