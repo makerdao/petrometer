@@ -94,7 +94,7 @@ class Petrometer:
         table.set_deco(Texttable.HEADER)
         table.set_cols_dtype(['t', 't', 't', 't', 't', 't', 't', 't', 't'])
         table.set_cols_align(['l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r'])
-        table.set_cols_width([11, 10, 10, 7, 25, 20, 8, 20, 12])
+        table.set_cols_width([11, 10, 10, 8, 25, 20, 8, 20, 12])
         table.add_rows([["Day", "All tx", "Failed tx", "(%)", "Average gas price", "Average tx cost", "($)", "Total tx cost", "($)"]]
                        + list(table_data()))
 
