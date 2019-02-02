@@ -85,14 +85,10 @@ class TestPlunger:
                 Petrometer(args(f"--etherscan-api-key SOMEKEY 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211")).main()
 
             # then
-            assert out.getvalue() == f"""Found 0 transactions for '0x52a043195a2803cc7e75f17f5c9d4f84ffa33211' in local cache.
-Fetching new transactions from etherscan.io...
-Fetched 72 new transactions (block number #0)...
-All new transactions fetched from etherscan.io.
-
+            assert out.getvalue() == f"""
 Gas usage summary for: 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211
 
-    Day         All tx     Failed tx      (%)          Average gas price         Average tx cost        ($)         Total tx cost           ($)
+    Day         All tx     Failed tx      (%)          Average gas price         Average tx cost        ($)         Total tx cost           ($)     
 ====================================================================================================================================================
 2017-12-29            16            0     (0.0%)                    3.6 GWei         0.00972251 ETH    ($7.19)         0.15556020 ETH      ($115.05)
 2017-12-30            21            0     (0.0%)                    2.5 GWei         0.00953677 ETH    ($6.61)         0.20027212 ETH      ($138.79)
@@ -103,7 +99,7 @@ Gas usage summary for: 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211
 2018-01-27            20            1     (5.0%)                    3.7 GWei         0.00889380 ETH    ($9.86)         0.17787595 ETH      ($197.28)
 
 Number of transactions: 71
-Total gas cost: 0.64768249 ETH ($543.27)
+Total gas cost: 0.64726249 ETH ($543.27)
 
 """
 
@@ -117,13 +113,10 @@ Total gas cost: 0.64768249 ETH ($543.27)
                 Petrometer(args(f"--etherscan-api-key SOMEKEY 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211")).main()
 
             # then
-            assert out.getvalue() == f"""Found 72 transactions for '0x52a043195a2803cc7e75f17f5c9d4f84ffa33211' in local cache.
-Fetching new transactions from etherscan.io...
-All new transactions fetched from etherscan.io.
-
+            assert out.getvalue() == f"""
 Gas usage summary for: 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211
 
-    Day         All tx     Failed tx      (%)          Average gas price         Average tx cost        ($)         Total tx cost           ($)
+    Day         All tx     Failed tx      (%)          Average gas price         Average tx cost        ($)         Total tx cost           ($)     
 ====================================================================================================================================================
 2017-12-29            16            0     (0.0%)                    3.6 GWei         0.00972251 ETH    ($7.19)         0.15556020 ETH      ($115.05)
 2017-12-30            21            0     (0.0%)                    2.5 GWei         0.00953677 ETH    ($6.61)         0.20027212 ETH      ($138.79)
@@ -134,6 +127,6 @@ Gas usage summary for: 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211
 2018-01-27            20            1     (5.0%)                    3.7 GWei         0.00889380 ETH    ($9.86)         0.17787595 ETH      ($197.28)
 
 Number of transactions: 71
-Total gas cost: 0.64768249 ETH ($543.27)
+Total gas cost: 0.64726249 ETH ($543.27)
 
 """
