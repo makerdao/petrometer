@@ -49,7 +49,7 @@ def args(arguments):
     return arguments.split()
 
 
-class TestPlunger:
+class TestPetrometer:
     @staticmethod
     def mock_api(mock, datadir):
         mock.get("https://api.etherscan.io/api?module=account&action=txlist&address=0x52a043195a2803cc7e75f17f5c9d4f84ffa33211&startblock=0&endblock=99999999&page=1&offset=100&sort=asc&apikey=SOMEKEY",
