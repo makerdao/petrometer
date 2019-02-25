@@ -106,9 +106,8 @@ class Petrometer:
                f"Number of transactions: {len(transactions)}\n" + \
                f"Total gas cost: %.8f ETH" % self.total_gas_cost(transactions) + " (" + self.format_usd(total_usd_cost()) + ")\n"
 
-    @staticmethod
-    def failed_transactions(transactions):
-        return len(list(filter(lambda transaction: transaction['txreceipt_status'] == "0", transactions)))
+    def failed_transactions(self, transactions):
+        return len(list(filter(self.is_failed, transactions)))
 
     @staticmethod
     def percentage(ratio):
@@ -127,6 +126,10 @@ class Petrometer:
     def by_day(transaction: dict):
         transaction_timestamp = datetime.datetime.fromtimestamp(int(transaction['timeStamp']), tz=pytz.UTC)
         return transaction_timestamp.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    @staticmethod
+    def is_failed(transaction: dict) -> int:
+        return transaction['txreceipt_status'] == "0"
 
     @staticmethod
     def gas_price(transaction: dict) -> int:
