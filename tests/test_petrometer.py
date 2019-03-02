@@ -103,7 +103,7 @@ Total gas cost: 0.64726249 ETH ($543.27)
 
 """
 
-        # keep local cache as `plunger` left it
+        # keep local cache
 
         # run `petrometer` again
         with captured_output() as (out, err):
