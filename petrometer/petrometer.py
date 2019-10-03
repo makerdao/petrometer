@@ -217,7 +217,12 @@ class Petrometer:
 
     @staticmethod
     def get_eth_prices():
-        response = requests.get("https://etherscan.io/chart/etherprice?output=csv", timeout=HTTP_TIMEOUT, allow_redirects=False)
+        response = requests.get("https://etherscan.io/chart/etherprice?output=csv",
+                                headers={
+                                    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36'
+                                },
+                                timeout=HTTP_TIMEOUT,
+                                allow_redirects=False)
         if response.status_code != 200:
             raise Exception(f"Failed to fetch historical ETH prices from etherscan.io:"
                             f" {response.status_code} {response.reason} ({response.text})")
