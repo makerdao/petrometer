@@ -19,6 +19,7 @@ import argparse
 import csv
 import datetime
 import sys
+import json
 
 import os
 
@@ -44,6 +45,7 @@ class Petrometer:
         parser.add_argument("addresses", metavar='ADDRESSES', nargs='+', type=str,
                             help="Ethereum addresses to get the gas usage of")
         parser.add_argument("--etherscan-api-key", help="Etherscan API key", required=True, type=str)
+        parser.add_argument("-j", '--json', help="Generate result as JSON", dest='json', action='store_true')
         parser.add_argument("-o", "--output", help="File to save the output to", required=False, type=str)
 
         self.arguments = parser.parse_args(args)
@@ -53,6 +55,8 @@ class Petrometer:
         eth_prices = self.get_eth_prices()
 
         result = self.daily_gas_usage(transactions, eth_prices)
+        if self.arguments.json:
+            result = json.dumps(result)
 
         if self.arguments.output is not None:
             with open(self.arguments.output, "w") as file:
@@ -79,6 +83,22 @@ class Petrometer:
                        "%.8f ETH" % self.total_gas_cost(day_transactions),
                        ("(%s)" % self.format_usd(self.total_gas_cost(day_transactions) * day_eth_price)) if day_eth_price is not None else ""]
 
+        def json_data():
+            for day, day_transactions in groupby(transactions, self.by_day):
+                day_transactions = list(day_transactions)
+                day_eth_price = eth_prices.get(int(day.timestamp()))
+
+                yield {
+                    'day': day.strftime('%Y-%m-%d'),
+                    'all_tx': len(day_transactions),
+                    'failed_tx': self.failed_transactions(day_transactions),
+                    'avg_gas_price': self.avg_gas_price(day_transactions),
+                    'avg_tx_cost_eth': self.avg_gas_cost(day_transactions),
+                    'avg_tx_cost_usd': self.avg_gas_cost(day_transactions) * day_eth_price if day_eth_price is not None else "",
+                    'total_tx_cost_eth': self.total_gas_cost(day_transactions),
+                    'total_tx_cost_usd': self.total_gas_cost(day_transactions) * day_eth_price if day_eth_price is not None else ""
+                }
+
         def total_usd_cost():
             result = 0.0
 
@@ -89,6 +109,9 @@ class Petrometer:
                     result += self.total_gas_cost(day_transactions) * day_eth_price
 
             return result
+
+        if self.arguments.json:
+            return list(json_data())
 
         table = Texttable(max_width=250)
         table.set_deco(Texttable.HEADER)

@@ -31,14 +31,20 @@ pip3 install -r requirements.txt
 ## Usage
 
 ```
-usage: petrometer [-h] --etherscan-api-key ETHERSCAN_API_KEY address
+usage: petrometer [-h] --etherscan-api-key ETHERSCAN_API_KEY [-j] [-o OUTPUT]
+                  ADDRESSES [ADDRESSES ...]
 
-arguments:
-  --etherscan-api-key ETHERSCAN_API_KEY    Etherscan API key
-  address                                  Ethereum address to get the gas usage of
+positional arguments:
+  ADDRESSES             Ethereum addresses to get the gas usage of
 
 optional arguments:
   -h, --help            show this help message and exit
+  --etherscan-api-key ETHERSCAN_API_KEY
+                        Etherscan API key
+  -j, --json            Generate result as JSON
+  -o OUTPUT, --output OUTPUT
+                        File to save the output to
+
 ```
 
 Sample invocation:
