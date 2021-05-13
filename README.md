@@ -44,6 +44,7 @@ optional arguments:
   -j, --json            Generate result as JSON
   -o OUTPUT, --output OUTPUT
                         File to save the output to
+  -i, --incoming        Show incoming transaction gas usage, defaut outgoing
 
 ```
 
