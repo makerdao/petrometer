@@ -123,12 +123,14 @@ class Petrometer:
         table.add_rows([["Day", "All tx", "Failed tx", "(%)", "Average gas price", "Average tx cost", "($)", "Total tx cost", "($)"]]
                        + list(table_data()))
 
-        addresses = ("\n" + 23 * " ").join(self.arguments.addresses)
+        direction = self.arguments.incoming and 'incoming' or 'sent'
+        indent = self.arguments.incoming and 36 or 32
+        addresses = ("\n" + indent * " ").join(self.arguments.addresses)
 
         return f"\n" + \
-               f"Gas usage summary for: {addresses}\n\n" + \
+               f"Gas usage summary for {direction} tx : {addresses}\n\n" + \
                table.draw() + "\n\n" + \
-               f"Number of transactions: {len(transactions)}\n" + \
+               f"Number of {direction} transactions: {len(transactions)}\n" + \
                f"Total gas cost: %.8f ETH" % self.total_gas_cost(transactions) + " (" + self.format_usd(total_usd_cost()) + ")\n"
 
     def failed_transactions(self, transactions):
