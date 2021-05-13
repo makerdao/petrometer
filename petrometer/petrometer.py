@@ -47,6 +47,8 @@ class Petrometer:
         parser.add_argument("--etherscan-api-key", help="Etherscan API key", required=True, type=str)
         parser.add_argument("-j", '--json', help="Generate result as JSON", dest='json', action='store_true')
         parser.add_argument("-o", "--output", help="File to save the output to", required=False, type=str)
+        parser.add_argument("-i", "--incoming", help="Show incoming transaction gas usage, defaut outgoing",
+                            required=False, action='store_true')
 
         self.arguments = parser.parse_args(args)
 
@@ -195,7 +197,11 @@ class Petrometer:
                     print(f"All new transactions fetched from etherscan.io.", file=sys.stderr)
                     break
 
-            return list(filter(lambda tx: tx['from'].lower() == address.lower(), db.all()))
+            if self.arguments.incoming:
+                direction = 'to'
+            else:
+                direction = 'from'
+            return list(filter(lambda tx: tx[direction].lower() == address.lower(), db.all()))
 
     @staticmethod
     def get_db(address: str):
