@@ -47,6 +47,8 @@ class Petrometer:
         parser.add_argument("--etherscan-api-key", help="Etherscan API key", required=True, type=str)
         parser.add_argument("-j", '--json', help="Generate result as JSON", dest='json', action='store_true')
         parser.add_argument("-o", "--output", help="File to save the output to", required=False, type=str)
+        parser.add_argument("-i", "--incoming", help="Show incoming transaction gas usage, defaut outgoing",
+                            required=False, action='store_true')
 
         self.arguments = parser.parse_args(args)
 
@@ -117,16 +119,18 @@ class Petrometer:
         table.set_deco(Texttable.HEADER)
         table.set_cols_dtype(['t', 't', 't', 't', 't', 't', 't', 't', 't'])
         table.set_cols_align(['l', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r'])
-        table.set_cols_width([11, 10, 10, 8, 25, 20, 8, 20, 12])
+        table.set_cols_width([11, 10, 10, 8, 25, 20, 9, 20, 12])
         table.add_rows([["Day", "All tx", "Failed tx", "(%)", "Average gas price", "Average tx cost", "($)", "Total tx cost", "($)"]]
                        + list(table_data()))
 
-        addresses = ("\n" + 23 * " ").join(self.arguments.addresses)
+        direction = self.arguments.incoming and 'incoming' or 'sent'
+        indent = self.arguments.incoming and 36 or 32
+        addresses = ("\n" + indent * " ").join(self.arguments.addresses)
 
         return f"\n" + \
-               f"Gas usage summary for: {addresses}\n\n" + \
+               f"Gas usage summary for {direction} tx : {addresses}\n\n" + \
                table.draw() + "\n\n" + \
-               f"Number of transactions: {len(transactions)}\n" + \
+               f"Number of {direction} transactions: {len(transactions)}\n" + \
                f"Total gas cost: %.8f ETH" % self.total_gas_cost(transactions) + " (" + self.format_usd(total_usd_cost()) + ")\n"
 
     def failed_transactions(self, transactions):
@@ -195,7 +199,11 @@ class Petrometer:
                     print(f"All new transactions fetched from etherscan.io.", file=sys.stderr)
                     break
 
-            return list(filter(lambda tx: tx['from'].lower() == address.lower(), db.all()))
+            if self.arguments.incoming:
+                direction = 'to'
+            else:
+                direction = 'from'
+            return list(filter(lambda tx: tx[direction].lower() == address.lower(), db.all()))
 
     @staticmethod
     def get_db(address: str):

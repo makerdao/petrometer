@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/makerdao/petrometer/branch/master/graph/badge.svg)](https://codecov.io/gh/makerdao/petrometer)
 
 `petrometer` is a tool which summarizes daily and total gas consumption of all transactions sent
-from a specified Ethereum address.
+from or received by one or more specified Ethereum addresses.
 
 It uses the etherscan.io API (<https://etherscan.io/apis>) to download the transaction data as it's
 much more effective than querying an Ethereum node directly. What even more, it caches the downloaded
@@ -32,6 +32,7 @@ pip3 install -r requirements.txt
 
 ```
 usage: petrometer [-h] --etherscan-api-key ETHERSCAN_API_KEY [-j] [-o OUTPUT]
+                  [-i]
                   ADDRESSES [ADDRESSES ...]
 
 positional arguments:
@@ -44,6 +45,7 @@ optional arguments:
   -j, --json            Generate result as JSON
   -o OUTPUT, --output OUTPUT
                         File to save the output to
+  -i, --incoming        Show incoming transaction gas usage, defaut outgoing
 
 ```
 
