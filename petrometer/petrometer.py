@@ -248,22 +248,16 @@ class Petrometer:
 
     @staticmethod
     def get_eth_prices():
-        response = requests.get("https://etherscan.io/chart/etherprice?output=csv",
-                                headers={
-                                    'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36'
-                                },
-                                timeout=HTTP_TIMEOUT,
-                                allow_redirects=False)
+        response = requests.get('https://api.coingecko.com/api/v3/coins/ethereum/market_chart',
+                                params={'vs_currency': 'usd', 'days': 'max', 'interval': 'daily'})
         if response.status_code != 200:
-            raise Exception(f"Failed to fetch historical ETH prices from etherscan.io:"
-                            f" {response.status_code} {response.reason} ({response.text})")
+            raise RuntimeError(f"Failed to fetch historical ETH prices from coingecko.com:"
+                               f" {response.status_code} {response.reason} ({response.text})")
 
+        prices_json = response.json()['prices']
         prices = {}
-
-        prices_reader = csv.reader(response.text.split("\n"))
-        for row in prices_reader:
-            if len(row) == 3 and row[2] != "Value":
-                prices[int(row[1])] = float(row[2])
+        for price in prices_json:
+            prices[price[0]/1000] = price[1]
 
         return prices
 
