@@ -1,7 +1,6 @@
 # petrometer
 
-[![Build Status](https://travis-ci.org/makerdao/petrometer.svg?branch=master)](https://travis-ci.org/makerdao/petrometer)
-[![codecov](https://codecov.io/gh/makerdao/petrometer/branch/master/graph/badge.svg)](https://codecov.io/gh/makerdao/petrometer)
+![Build Status](https://github.com/makerdao/petrometer/blob/master/.github/workflows/tests.yaml/badge.svg?branch=master)
 
 `petrometer` is a tool which summarizes daily and total gas consumption of all transactions sent
 from or received by one or more specified Ethereum addresses.
