@@ -52,17 +52,25 @@ def args(arguments):
 class TestPetrometer:
     @staticmethod
     def mock_api(mock, datadir):
-        mock.get("https://api.etherscan.io/api?module=account&action=txlist&address=0x52a043195a2803cc7e75f17f5c9d4f84ffa33211&startblock=0&endblock=99999999&page=1&offset=100&sort=asc&apikey=SOMEKEY",
-                 text=datadir.join('startblock_0.json').read_text('utf-8'))
+        mock.get(
+            "https://api.etherscan.io/api?module=account&action=txlist&address=0x52a043195a2803cc7e75f17f5c9d4f84ffa33211&startblock=0&endblock=99999999&page=1&offset=100&sort=asc&apikey=SOMEKEY",
+            text=datadir.join("startblock_0.json").read_text("utf-8"),
+        )
 
-        mock.get("https://api.etherscan.io/api?module=account&action=txlist&address=0x52a043195a2803cc7e75f17f5c9d4f84ffa33211&startblock=4981201&endblock=99999999&page=1&offset=100&sort=asc&apikey=SOMEKEY",
-                 text=datadir.join('startblock_4981201.json').read_text('utf-8'))
+        mock.get(
+            "https://api.etherscan.io/api?module=account&action=txlist&address=0x52a043195a2803cc7e75f17f5c9d4f84ffa33211&startblock=4981201&endblock=99999999&page=1&offset=100&sort=asc&apikey=SOMEKEY",
+            text=datadir.join("startblock_4981201.json").read_text("utf-8"),
+        )
 
-        mock.get("https://api.etherscan.io/api?module=account&action=txlist&address=0x9041fe5b3fdea0f5e4afdc17e75180738d877a01&startblock=0&endblock=99999999&page=1&offset=100&sort=asc&apikey=SOMEKEY",
-                 text=datadir.join('addr2_startblock_0.json').read_text('utf-8'))
+        mock.get(
+            "https://api.etherscan.io/api?module=account&action=txlist&address=0x9041fe5b3fdea0f5e4afdc17e75180738d877a01&startblock=0&endblock=99999999&page=1&offset=100&sort=asc&apikey=SOMEKEY",
+            text=datadir.join("addr2_startblock_0.json").read_text("utf-8"),
+        )
 
-        mock.get("https://api.etherscan.io/api?module=account&action=txlist&address=0x9041fe5b3fdea0f5e4afdc17e75180738d877a01&startblock=4981201&endblock=99999999&page=1&offset=100&sort=asc&apikey=SOMEKEY",
-                 text=datadir.join('addr2_startblock_4981201.json').read_text('utf-8'))
+        mock.get(
+            "https://api.etherscan.io/api?module=account&action=txlist&address=0x9041fe5b3fdea0f5e4afdc17e75180738d877a01&startblock=4981201&endblock=99999999&page=1&offset=100&sort=asc&apikey=SOMEKEY",
+            text=datadir.join("addr2_startblock_4981201.json").read_text("utf-8"),
+        )
 
     def test_should_print_usage_when_no_arguments(self):
         # when
@@ -72,13 +80,18 @@ class TestPetrometer:
 
         # then
         assert "usage: petrometer" in err.getvalue()
-        assert "petrometer: error: the following arguments are required: ADDRESSES, --etherscan-api-key" in err.getvalue()
+        assert (
+            "petrometer: error: the following arguments are required: ADDRESSES, --etherscan-api-key, --ethfiller-key"
+            in err.getvalue()
+        )
 
     def test_happy_path(self, datadir):
         # remove local cache file
         try:
             db_folder = user_cache_dir("petrometer", "maker")
-            db_file = os.path.join(db_folder, "0x52a043195a2803cc7e75f17f5c9d4f84ffa33211.txdb")
+            db_file = os.path.join(
+                db_folder, "0x52a043195a2803cc7e75f17f5c9d4f84ffa33211.txdb"
+            )
             os.remove(db_file)
         except:
             pass
@@ -88,10 +101,16 @@ class TestPetrometer:
             # when
             with requests_mock.Mocker(real_http=True) as mock:
                 self.mock_api(mock, datadir)
-                Petrometer(args(f"--etherscan-api-key SOMEKEY 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211")).main()
+                Petrometer(
+                    args(
+                        f"--etherscan-api-key SOMEKEY --ethfiller-key SOMEGRAPHITEKEY 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211"
+                    )
+                ).main()
 
             # then
-            assert out.getvalue() == f"""
+            assert (
+                out.getvalue()
+                == f"""
 Gas usage summary for sent tx : 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211
 
     Day         All tx     Failed tx      (%)          Average gas price         Average tx cost         ($)         Total tx cost           ($)     
@@ -108,6 +127,7 @@ Number of sent transactions: 71
 Total gas cost: 0.64726249 ETH ($555.98)
 
 """
+            )
 
         # keep local cache
 
@@ -117,10 +137,16 @@ Total gas cost: 0.64726249 ETH ($555.98)
 
             with requests_mock.Mocker(real_http=True) as mock:
                 self.mock_api(mock, datadir)
-                Petrometer(args(f"--etherscan-api-key SOMEKEY 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211")).main()
+                Petrometer(
+                    args(
+                        f"--etherscan-api-key SOMEKEY --ethfiller-key SOMEGRAPHITEKEY 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211"
+                    )
+                ).main()
 
             # then
-            assert out.getvalue() == f"""
+            assert (
+                out.getvalue()
+                == f"""
 Gas usage summary for sent tx : 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211
 
     Day         All tx     Failed tx      (%)          Average gas price         Average tx cost         ($)         Total tx cost           ($)     
@@ -137,13 +163,18 @@ Number of sent transactions: 71
 Total gas cost: 0.64726249 ETH ($555.98)
 
 """
+            )
 
     def test_with_two_addresses(self, datadir):
         # remove local cache file
         try:
             db_folder = user_cache_dir("petrometer", "maker")
-            db_file = os.path.join(db_folder, "0x52a043195a2803cc7e75f17f5c9d4f84ffa33211.txdb")
-            db_file = os.path.join(db_folder, "0x9041fe5b3fdea0f5e4afdc17e75180738d877a01.txdb")
+            db_file = os.path.join(
+                db_folder, "0x52a043195a2803cc7e75f17f5c9d4f84ffa33211.txdb"
+            )
+            db_file = os.path.join(
+                db_folder, "0x9041fe5b3fdea0f5e4afdc17e75180738d877a01.txdb"
+            )
             os.remove(db_file)
         except:
             pass
@@ -153,12 +184,19 @@ Total gas cost: 0.64726249 ETH ($555.98)
             # when
             with requests_mock.Mocker(real_http=True) as mock:
                 self.mock_api(mock, datadir)
-                Petrometer(args(f"--etherscan-api-key SOMEKEY"
-                                f" 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211"
-                                f" 0x9041fe5b3fdea0f5e4afdc17e75180738d877a01")).main()
+                Petrometer(
+                    args(
+                        f"--etherscan-api-key SOMEKEY"
+                        f"--ethfiller-key SOMEGRAPHITEKEY"
+                        f" 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211"
+                        f" 0x9041fe5b3fdea0f5e4afdc17e75180738d877a01"
+                    )
+                ).main()
 
             # then
-            assert out.getvalue() == f"""
+            assert (
+                out.getvalue()
+                == f"""
 Gas usage summary for sent tx : 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211
                                 0x9041fe5b3fdea0f5e4afdc17e75180738d877a01
 
@@ -177,3 +215,4 @@ Number of sent transactions: 74
 Total gas cost: 0.67170682 ETH ($584.71)
 
 """
+            )

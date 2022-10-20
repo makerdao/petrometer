@@ -18,9 +18,10 @@ account (<https://etherscan.io/register>) in order to be able to generate an API
 
 ## Installation
 
-This project uses *Python 3.6.6*.
+This project uses _Python 3.6.6_.
 
 In order to clone the project and install required third-party packages please execute:
+
 ```
 git clone https://github.com/makerdao/petrometer.git
 cd petrometer
@@ -30,7 +31,7 @@ pip3 install -r requirements.txt
 ## Usage
 
 ```
-usage: petrometer [-h] --etherscan-api-key ETHERSCAN_API_KEY [-j] [-o OUTPUT]
+usage: petrometer [-h] --etherscan-api-key ETHERSCAN_API_KEY --ethfiller-key GRAPHITE_KEY [-j] [-o OUTPUT]
                   [-i]
                   ADDRESSES [ADDRESSES ...]
 
@@ -41,6 +42,8 @@ optional arguments:
   -h, --help            show this help message and exit
   --etherscan-api-key ETHERSCAN_API_KEY
                         Etherscan API key
+  --ethfiller-key GRAPHITE_KEY
+                        GraphiteDB key to publish metrics to Grafana
   -j, --json            Generate result as JSON
   -o OUTPUT, --output OUTPUT
                         File to save the output to
@@ -51,7 +54,7 @@ optional arguments:
 Sample invocation:
 
 ```
-bin/petrometer --etherscan-api-key ABCDFDBCBAFDBCFBDFCBFDBAFB 0x1212121212343434343456565656565454545454
+bin/petrometer --etherscan-api-key ABCDFDBCBAFDBCFBDFCBFDBAFB --ethfiller-key "0123:abcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabc=" 0x1212121212343434343456565656565454545454
 ```
 
 Sample output:
@@ -59,7 +62,7 @@ Sample output:
 ```
 Gas usage summary for: 0x00......................................
 
-    Day       # transactions        Average gas price              Average gas cost                  Total gas cost        
+    Day       # transactions        Average gas price              Average gas cost                  Total gas cost
 ===========================================================================================================================
 2018-01-06                 12                   39.7 GWei         0.005078854742238021 ETH         0.060946256906856247 ETH
 2018-01-07                 22                   22.0 GWei         0.003037521765674030 ETH         0.066825478844828673 ETH
