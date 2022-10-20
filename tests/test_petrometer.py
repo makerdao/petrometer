@@ -25,7 +25,6 @@ import pytest
 import requests_mock
 from appdirs import user_cache_dir
 from pytest import fixture
-
 from petrometer.petrometer import Petrometer
 
 
@@ -50,25 +49,40 @@ def args(arguments):
 
 
 class TestPetrometer:
+    def __init__(self) -> None:
+        try:
+            os.environ["ETHERSCAN_API_KEY"]
+        except Exception:
+            print("No ETHERSCAN_API_KEY environment variable passed, exiting")
+            sys.exit(2)
+
     @staticmethod
     def mock_api(mock, datadir):
         mock.get(
-            "https://api.etherscan.io/api?module=account&action=txlist&address=0x52a043195a2803cc7e75f17f5c9d4f84ffa33211&startblock=0&endblock=99999999&page=1&offset=100&sort=asc&apikey=SOMEKEY",
+            "https://api.etherscan.io/api?module=account&action=txlist&address=0x52a043195a2803cc7e75f17f5c9d4f84ffa33211&startblock=0&endblock=99999999&page=1&offset=100&sort=asc&apikey={}".format(
+                os.environ["ETHERSCAN_API_KEY"]
+            ),
             text=datadir.join("startblock_0.json").read_text("utf-8"),
         )
 
         mock.get(
-            "https://api.etherscan.io/api?module=account&action=txlist&address=0x52a043195a2803cc7e75f17f5c9d4f84ffa33211&startblock=4981201&endblock=99999999&page=1&offset=100&sort=asc&apikey=SOMEKEY",
+            "https://api.etherscan.io/api?module=account&action=txlist&address=0x52a043195a2803cc7e75f17f5c9d4f84ffa33211&startblock=4981201&endblock=99999999&page=1&offset=100&sort=asc&apikey={}".format(
+                os.environ["ETHERSCAN_API_KEY"]
+            ),
             text=datadir.join("startblock_4981201.json").read_text("utf-8"),
         )
 
         mock.get(
-            "https://api.etherscan.io/api?module=account&action=txlist&address=0x9041fe5b3fdea0f5e4afdc17e75180738d877a01&startblock=0&endblock=99999999&page=1&offset=100&sort=asc&apikey=SOMEKEY",
+            "https://api.etherscan.io/api?module=account&action=txlist&address=0x9041fe5b3fdea0f5e4afdc17e75180738d877a01&startblock=0&endblock=99999999&page=1&offset=100&sort=asc&apikey={}".format(
+                os.environ["ETHERSCAN_API_KEY"]
+            ),
             text=datadir.join("addr2_startblock_0.json").read_text("utf-8"),
         )
 
         mock.get(
-            "https://api.etherscan.io/api?module=account&action=txlist&address=0x9041fe5b3fdea0f5e4afdc17e75180738d877a01&startblock=4981201&endblock=99999999&page=1&offset=100&sort=asc&apikey=SOMEKEY",
+            "https://api.etherscan.io/api?module=account&action=txlist&address=0x9041fe5b3fdea0f5e4afdc17e75180738d877a01&startblock=4981201&endblock=99999999&page=1&offset=100&sort=asc&apikey={}".format(
+                os.environ["ETHERSCAN_API_KEY"]
+            ),
             text=datadir.join("addr2_startblock_4981201.json").read_text("utf-8"),
         )
 
@@ -81,7 +95,7 @@ class TestPetrometer:
         # then
         assert "usage: petrometer" in err.getvalue()
         assert (
-            "petrometer: error: the following arguments are required: --ethfiller-key, --alias"
+            "petrometer: error: the following arguments are required: ADDRESSES, --etherscan-api-key, --ethfiller-key, --alias"
             in err.getvalue()
         )
 
@@ -103,7 +117,9 @@ class TestPetrometer:
                 self.mock_api(mock, datadir)
                 Petrometer(
                     args(
-                        f"--etherscan-api-key SOMEKEY --ethfiller-key SOMEGRAPHITEKEY 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211 --alias SOMEALIAS"
+                        "--etherscan-api-key {} --ethfiller-key SOMEGRAPHITEKEY 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211 --alias SOMEALIAS".format(
+                            os.environ["ETHERSCAN_API_KEY"]
+                        )
                     )
                 ).main()
 
@@ -139,7 +155,9 @@ Total gas cost: 0.64726249 ETH ($555.98)
                 self.mock_api(mock, datadir)
                 Petrometer(
                     args(
-                        f"--etherscan-api-key SOMEKEY --ethfiller-key SOMEGRAPHITEKEY 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211 --alias SOMEALIAS"
+                        "--etherscan-api-key {} --ethfiller-key SOMEGRAPHITEKEY 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211 --alias SOMEALIAS".format(
+                            os.environ["ETHERSCAN_API_KEY"]
+                        )
                     )
                 ).main()
 
@@ -186,11 +204,9 @@ Total gas cost: 0.64726249 ETH ($555.98)
                 self.mock_api(mock, datadir)
                 Petrometer(
                     args(
-                        f"--etherscan-api-key SOMEKEY"
-                        f"--ethfiller-key SOMEGRAPHITEKEY"
-                        f"--alias SOMEALIAS"
-                        f" 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211"
-                        f" 0x9041fe5b3fdea0f5e4afdc17e75180738d877a01"
+                        "--etherscan-api-key {} --ethfiller-key SOMEGRAPHITEKEY 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211 0x9041fe5b3fdea0f5e4afdc17e75180738d877a01 --alias SOMEALIAS".format(
+                            os.environ["ETHERSCAN_API_KEY"]
+                        )
                     )
                 ).main()
 
