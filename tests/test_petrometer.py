@@ -28,6 +28,13 @@ from pytest import fixture
 from petrometer.petrometer import Petrometer
 
 
+try:
+    os.environ["ETHERSCAN_API_KEY"]
+except Exception:
+    print("No ETHERSCAN_API_KEY environment variable passed, exiting")
+    sys.exit(2)
+
+
 @contextmanager
 def captured_output():
     new_out, new_err = StringIO(), StringIO()
@@ -49,13 +56,6 @@ def args(arguments):
 
 
 class TestPetrometer:
-    def __init__(self) -> None:
-        try:
-            os.environ["ETHERSCAN_API_KEY"]
-        except Exception:
-            print("No ETHERSCAN_API_KEY environment variable passed, exiting")
-            sys.exit(2)
-
     @staticmethod
     def mock_api(mock, datadir):
         mock.get(
