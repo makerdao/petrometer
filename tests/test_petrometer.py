@@ -81,7 +81,7 @@ class TestPetrometer:
         # then
         assert "usage: petrometer" in err.getvalue()
         assert (
-            "petrometer: error: the following arguments are required: ADDRESSES, --etherscan-api-key, --ethfiller-key"
+            "petrometer: error: the following arguments are required: --ethfiller-key, --alias"
             in err.getvalue()
         )
 
@@ -103,7 +103,7 @@ class TestPetrometer:
                 self.mock_api(mock, datadir)
                 Petrometer(
                     args(
-                        f"--etherscan-api-key SOMEKEY --ethfiller-key SOMEGRAPHITEKEY 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211"
+                        f"--etherscan-api-key SOMEKEY --ethfiller-key SOMEGRAPHITEKEY 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211 --alias SOMEALIAS"
                     )
                 ).main()
 
@@ -139,7 +139,7 @@ Total gas cost: 0.64726249 ETH ($555.98)
                 self.mock_api(mock, datadir)
                 Petrometer(
                     args(
-                        f"--etherscan-api-key SOMEKEY --ethfiller-key SOMEGRAPHITEKEY 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211"
+                        f"--etherscan-api-key SOMEKEY --ethfiller-key SOMEGRAPHITEKEY 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211 --alias SOMEALIAS"
                     )
                 ).main()
 
@@ -188,6 +188,7 @@ Total gas cost: 0.64726249 ETH ($555.98)
                     args(
                         f"--etherscan-api-key SOMEKEY"
                         f"--ethfiller-key SOMEGRAPHITEKEY"
+                        f"--alias SOMEALIAS"
                         f" 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211"
                         f" 0x9041fe5b3fdea0f5e4afdc17e75180738d877a01"
                     )
