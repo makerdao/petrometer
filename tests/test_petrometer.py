@@ -125,8 +125,7 @@ class TestPetrometer:
 
             # then
             assert (
-                out.getvalue()
-                == f"""
+                f"""
 Gas usage summary for sent tx : 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211
 
     Day         All tx     Failed tx      (%)          Average gas price         Average tx cost         ($)         Total tx cost           ($)     
@@ -136,6 +135,7 @@ Gas usage summary for sent tx : 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211
 Number of sent transactions: 1
 Total gas cost: 0.00042000 ETH ($1.07)
 """
+                in out.getvalue()
             )
 
         # keep local cache
@@ -156,8 +156,7 @@ Total gas cost: 0.00042000 ETH ($1.07)
 
             # then
             assert (
-                out.getvalue()
-                == f"""
+                f"""
 Gas usage summary for sent tx : 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211
 
     Day         All tx     Failed tx      (%)          Average gas price         Average tx cost         ($)         Total tx cost           ($)     
@@ -167,6 +166,7 @@ Gas usage summary for sent tx : 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211
 Number of sent transactions: 1
 Total gas cost: 0.00042000 ETH ($1.07)
 """
+                in out.getvalue()
             )
 
     def test_with_two_addresses(self, datadir):
@@ -198,8 +198,7 @@ Total gas cost: 0.00042000 ETH ($1.07)
 
             # then
             assert (
-                out.getvalue()
-                == f"""
+                f"""
 Gas usage summary for sent tx : 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211
                                 0x9041fe5b3fdea0f5e4afdc17e75180738d877a01
 
@@ -210,4 +209,5 @@ Gas usage summary for sent tx : 0x52a043195a2803cc7e75f17f5c9d4f84ffa33211
 Number of sent transactions: 1
 Total gas cost: 0.00042000 ETH ($1.07)
 """
+                in out.getvalue()
             )
