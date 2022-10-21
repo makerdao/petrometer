@@ -53,7 +53,11 @@ class Petrometer:
             "--etherscan-api-key", help="Etherscan API key", required=True, type=str
         )
         parser.add_argument(
-            "--ethfiller-key", help="Graphite API key", required=True, type=str
+            "--graphite-key",
+            help="Graphite API key",
+            required=False,
+            type=str,
+            default="",
         )
         parser.add_argument("--alias", help="Address alias", required=True, type=str)
         parser.add_argument(
@@ -300,7 +304,7 @@ class Petrometer:
                         print(
                             f"Tx: {transaction['hash']} | timestamp: {transaction['timeStamp']} | Gas used: {gas}"
                         )
-                    self.post_to_grafana(grafana_payload, self.arguments.ethfiller_key)
+                    self.post_to_grafana(grafana_payload, self.arguments.graphite_key)
                 else:
                     print(
                         f"All new transactions fetched from etherscan.io.",
@@ -379,18 +383,24 @@ class Petrometer:
         return prices
 
     @staticmethod
-    def post_to_grafana(data, ethfiller_key):
+    def post_to_grafana(data, graphite_key):
         # As we can't send test data to Grafana, checking
         # if test is being ran and avoiding sending test data
         if "PYTEST_CURRENT_TEST" in os.environ:
             return True
+
+        # As --graphite-key is not mandatory
+        # checking if it was set
+        if not graphite_key:
+            return True
+
         result = requests.request(
             method="POST",
             url="https://graphite-us-central1.grafana.net/metrics",
             data=json.dumps(data, separators=(",", ":")),
             headers={
                 "Content-Type": "application/json",
-                "Authorization": "Bearer {}".format(ethfiller_key),
+                "Authorization": "Bearer {}".format(graphite_key),
             },
             timeout=60,
         )

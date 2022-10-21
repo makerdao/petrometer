@@ -31,7 +31,7 @@ pip3 install -r requirements.txt
 ## Usage
 
 ```
-usage: petrometer [-h] --etherscan-api-key ETHERSCAN_API_KEY --ethfiller-key GRAPHITE_KEY [-j] [-o OUTPUT]
+usage: petrometer [-h] --etherscan-api-key ETHERSCAN_API_KEY --graphite-key GRAPHITE_KEY [-j] [-o OUTPUT]
                   [-i]
                   ADDRESSES [ADDRESSES ...]
 
@@ -42,7 +42,7 @@ optional arguments:
   -h, --help            show this help message and exit
   --etherscan-api-key ETHERSCAN_API_KEY
                         Etherscan API key
-  --ethfiller-key GRAPHITE_KEY
+  --graphite-key GRAPHITE_KEY
                         GraphiteDB key to publish metrics to Grafana
   -j, --json            Generate result as JSON
   -o OUTPUT, --output OUTPUT
@@ -54,7 +54,7 @@ optional arguments:
 Sample invocation:
 
 ```
-bin/petrometer --etherscan-api-key ABCDFDBCBAFDBCFBDFCBFDBAFB --ethfiller-key "0123:abcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabc=" 0x1212121212343434343456565656565454545454
+bin/petrometer --etherscan-api-key ABCDFDBCBAFDBCFBDFCBFDBAFB --graphite-key "0123:abcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabc=" 0x1212121212343434343456565656565454545454
 ```
 
 Sample output:
