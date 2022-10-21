@@ -54,7 +54,7 @@ optional arguments:
 Sample invocation:
 
 ```
-bin/petrometer --etherscan-api-key ABCDFDBCBAFDBCFBDFCBFDBAFB --graphite-key "0123:abcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabc=" 0x1212121212343434343456565656565454545454
+bin/petrometer --etherscan-api-key ABCDFDBCBAFDBCFBDFCBFDBAFB --graphite-key "0123:abcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabc=" --graphite-endpoint "https://graphite-us-central1.grafana.net/metrics" 0x1212121212343434343456565656565454545454 --alias SOME_ALIAS
 ```
 
 Sample output:
