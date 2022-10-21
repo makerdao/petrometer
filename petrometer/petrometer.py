@@ -57,9 +57,8 @@ class Petrometer:
             help="Graphite API key",
             required=False,
             type=str,
-            default="",
         )
-        parser.add_argument("--alias", help="Address alias", required=True, type=str)
+        parser.add_argument("--alias", help="Address alias", required=False, type=str)
         parser.add_argument(
             "-j",
             "--json",
@@ -83,6 +82,8 @@ class Petrometer:
         )
 
         self.arguments = parser.parse_args(args)
+        if self.arguments.graphite_key and self.arguments.alias is None:
+            parser.error("The --graphite-key argument requires the --alias to be set")
 
     def main(self):
         transactions = list(
@@ -293,18 +294,25 @@ class Petrometer:
                         gas = (int(transaction["gasPrice"]) / 10**18) * int(
                             transaction["gasUsed"]
                         )
-                        grafana_payload.append(
-                            {
-                                "name": f"gasUsage.{self.arguments.alias}",
-                                "value": gas,
-                                "interval": 5,
-                                "time": int(transaction["timeStamp"]),
-                            }
-                        )
                         print(
                             f"Tx: {transaction['hash']} | timestamp: {transaction['timeStamp']} | Gas used: {gas}"
                         )
-                    self.post_to_grafana(grafana_payload, self.arguments.graphite_key)
+
+                        if self.arguments.graphite_key is not None:
+                            grafana_payload.append(
+                                {
+                                    "name": f"gasUsage.{self.arguments.alias or ''}",
+                                    "value": gas,
+                                    "interval": 5,
+                                    "time": int(transaction["timeStamp"]),
+                                }
+                            )
+
+                    # Only posting data to Grafana when --graphite-key is set
+                    if self.arguments.graphite_key is not None:
+                        self.post_to_grafana(
+                            grafana_payload, self.arguments.graphite_key
+                        )
                 else:
                     print(
                         f"All new transactions fetched from etherscan.io.",
@@ -387,11 +395,6 @@ class Petrometer:
         # As we can't send test data to Grafana, checking
         # if test is being ran and avoiding sending test data
         if "PYTEST_CURRENT_TEST" in os.environ:
-            return True
-
-        # As --graphite-key is not mandatory
-        # checking if it was set
-        if not graphite_key:
             return True
 
         result = requests.request(
