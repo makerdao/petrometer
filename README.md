@@ -31,7 +31,7 @@ pip3 install -r requirements.txt
 ## Usage
 
 ```
-usage: petrometer [-h] --etherscan-api-key ETHERSCAN_API_KEY --graphite-key GRAPHITE_KEY [-j] [-o OUTPUT]
+usage: petrometer [-h] --etherscan-api-key ETHERSCAN_API_KEY --graphite-key GRAPHITE_KEY --graphite-endpoint GRAPHITE_ENDPOINT --alias SOME_ALIAS [-j] [-o OUTPUT]
                   [-i]
                   ADDRESSES [ADDRESSES ...]
 

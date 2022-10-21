@@ -40,6 +40,9 @@ HTTP_TIMEOUT = 26
 
 
 class Petrometer:
+    """Class which summarizes daily and total gas consumption of all transactions sent
+    from or received by one or more specified Ethereum addresses"""
+
     def __init__(self, args: list):
         parser = argparse.ArgumentParser(prog="petrometer")
         parser.add_argument(
@@ -55,6 +58,12 @@ class Petrometer:
         parser.add_argument(
             "--graphite-key",
             help="Graphite API key",
+            required=False,
+            type=str,
+        )
+        parser.add_argument(
+            "--graphite-endpoint",
+            help="Graphite Endpoint",
             required=False,
             type=str,
         )
@@ -82,10 +91,15 @@ class Petrometer:
         )
 
         self.arguments = parser.parse_args(args)
-        if self.arguments.graphite_key and self.arguments.alias is None:
-            parser.error("The --graphite-key argument requires the --alias to be set")
+        if self.arguments.graphite_key and (
+            self.arguments.alias is None or self.arguments.graphite_endpoint is None
+        ):
+            parser.error(
+                "The --graphite-key argument requires both --alias and --graphite-endpoint to be set"
+            )
 
     def main(self):
+        """Main method"""
         transactions = list(
             chain.from_iterable(
                 self.get_transactions(address) for address in self.arguments.addresses
@@ -98,13 +112,14 @@ class Petrometer:
             result = json.dumps(result)
 
         if self.arguments.output is not None:
-            with open(self.arguments.output, "w") as file:
+            with open(self.arguments.output, "w", encoding="UTF-8") as file:
                 file.write(result)
 
         else:
             print(result)
 
     def daily_gas_usage(self, transactions, eth_prices):
+        """Outputs the usage of transaction gas per day"""
         transactions = sorted(transactions, key=lambda tx: int(tx["timeStamp"]))
 
         def table_data():
@@ -116,27 +131,17 @@ class Petrometer:
                     day.strftime("%Y-%m-%d"),
                     (len(day_transactions)),
                     (self.failed_transactions(day_transactions)),
-                    "(%.1f%%)"
-                    % self.percentage(
-                        self.failed_transactions(day_transactions)
-                        / len(day_transactions)
-                    ),
-                    "%.1f GWei" % self.avg_gas_price(day_transactions),
-                    "%.8f ETH" % self.avg_gas_cost(day_transactions),
+                    f"({self.percentage(self.failed_transactions(day_transactions) / len(day_transactions)):.1f})"
+                    f"{self.avg_gas_price(day_transactions):.1f} GWei",
+                    f"{self.avg_gas_cost(day_transactions):.8f} ETH",
                     (
-                        "(%s)"
-                        % self.format_usd(
-                            self.avg_gas_cost(day_transactions) * day_eth_price
-                        )
+                        f"({self.format_usd(self.avg_gas_cost(day_transactions) * day_eth_price)})"
                     )
                     if day_eth_price is not None
                     else "",
-                    "%.8f ETH" % self.total_gas_cost(day_transactions),
+                    f"{self.total_gas_cost(day_transactions):.8f} ETH",
                     (
-                        "(%s)"
-                        % self.format_usd(
-                            self.total_gas_cost(day_transactions) * day_eth_price
-                        )
+                        f"({self.format_usd(self.total_gas_cost(day_transactions) * day_eth_price)})"
                     )
                     if day_eth_price is not None
                     else "",
@@ -200,40 +205,46 @@ class Petrometer:
             + list(table_data())
         )
 
-        direction = self.arguments.incoming and "incoming" or "sent"
-        indent = self.arguments.incoming and 36 or 32
+        direction = "incoming" if self.arguments.incoming else "sent"
+        indent = 36 if self.arguments.incoming else 32
         addresses = ("\n" + indent * " ").join(self.arguments.addresses)
 
         return (
-            f"\n"
+            "\n"
             + f"Gas usage summary for {direction} tx : {addresses}\n\n"
             + table.draw()
             + "\n\n"
             + f"Number of {direction} transactions: {len(transactions)}\n"
-            + f"Total gas cost: %.8f ETH" % self.total_gas_cost(transactions)
+            + f"Total gas cost: {self.total_gas_cost(transactions):.8f} ETH"
             + " ("
             + self.format_usd(total_usd_cost())
             + ")\n"
         )
 
     def failed_transactions(self, transactions):
+        """Returns the amount of failed transactions"""
         return len(list(filter(self.is_failed, transactions)))
 
     @staticmethod
     def percentage(ratio):
+        """Returns the percentage of the given ratio"""
         return ratio * 100.0
 
     def avg_gas_price(self, transactions):
+        """Returns average gas price of given transactions"""
         return numpy.mean(list(map(self.gas_price, transactions))) / 10**9
 
     def avg_gas_cost(self, transactions):
+        """Returns average gas cost of given transactions"""
         return numpy.mean(list(map(self.gas_cost, transactions))) / 10**18
 
     def total_gas_cost(self, transactions):
+        """Returns total amount of gas cost of given transactions"""
         return sum(map(self.gas_cost, transactions)) / 10**18
 
     @staticmethod
     def by_day(transaction: dict):
+        """Returns the day of given transaction"""
         transaction_timestamp = datetime.datetime.fromtimestamp(
             int(transaction["timeStamp"]), tz=pytz.UTC
         )
@@ -241,27 +252,32 @@ class Petrometer:
 
     @staticmethod
     def is_failed(transaction: dict) -> int:
+        """Returns flag whether given transaction is failed or not"""
         return transaction["txreceipt_status"] == "0"
 
     @staticmethod
     def gas_price(transaction: dict) -> int:
+        """Returns gas price of a given transaction"""
         return int(transaction["gasPrice"])
 
     @staticmethod
     def gas_cost(transaction: dict) -> int:
+        """Returns gas cost of a given transaction"""
         return int(transaction["gasUsed"]) * int(transaction["gasPrice"])
 
     @staticmethod
     def format_usd(val):
+        """Formats value following USD common way"""
         return format_decimal(val, format="$#,##0.00", locale="en_US")
 
     def get_transactions(self, address: str) -> list:
+        """Returns transactions by given address"""
         with self.get_db(address) as db:
             print(
                 f"Found {len(db.all())} transactions for '{address}' in local cache.",
                 file=sys.stderr,
             )
-            print(f"Fetching new transactions from etherscan.io...", file=sys.stderr)
+            print("Fetching new transactions from etherscan.io...", file=sys.stderr)
 
             while True:
                 # Get all existing transactions in the db
@@ -311,11 +327,13 @@ class Petrometer:
                     # Only posting data to Grafana when --graphite-key is set
                     if self.arguments.graphite_key is not None:
                         self.post_to_grafana(
-                            grafana_payload, self.arguments.graphite_key
+                            grafana_payload,
+                            self.arguments.graphite_key,
+                            self.arguments.graphite_endpoint,
                         )
                 else:
                     print(
-                        f"All new transactions fetched from etherscan.io.",
+                        "All new transactions fetched from etherscan.io.",
                         file=sys.stderr,
                     )
                     break
@@ -330,18 +348,20 @@ class Petrometer:
 
     @staticmethod
     def get_db(address: str):
+        """Returns TinyDB connector"""
         db_folder = user_cache_dir("petrometer", "maker")
 
         try:
             os.makedirs(db_folder)
-        except OSError as e:
-            if e.errno != errno.EEXIST:
+        except OSError as error:
+            if error.errno != errno.EEXIST:
                 raise
 
         db_file = os.path.join(db_folder, address.lower() + ".txdb")
         return TinyDB(db_file, storage=CachingMiddleware(JSONStorage))
 
     def fetch_transactions(self, address: str, start_block: int) -> list:
+        """Returns transactions of given address starting from given block"""
         assert isinstance(address, str)
         assert isinstance(start_block, int)
 
@@ -357,7 +377,8 @@ class Petrometer:
             f"apikey={self.arguments.etherscan_api_key}"
         )
 
-        # Always wait some time before sending a request as we do not want to be banned by etherscan.io
+        # Always wait some time before sending a request
+        # as we do not want to be banned by etherscan.io
         time.sleep(0.2)
 
         result = requests.get(url, timeout=HTTP_TIMEOUT).json()
@@ -373,9 +394,11 @@ class Petrometer:
 
     @staticmethod
     def get_eth_prices():
+        """Gets the daily price of ETH grouped by days"""
         response = requests.get(
             "https://api.coingecko.com/api/v3/coins/ethereum/market_chart",
             params={"vs_currency": "usd", "days": "max", "interval": "daily"},
+            timeout=30,
         )
         if response.status_code != 200:
             raise RuntimeError(
@@ -391,28 +414,26 @@ class Petrometer:
         return prices
 
     @staticmethod
-    def post_to_grafana(data, graphite_key):
-        # As we can't send test data to Grafana, checking
-        # if test is being ran and avoiding sending test data
+    def post_to_grafana(data, graphite_key, graphite_endpoint):
+        """Constructs the payload containing transactions data
+        and posts it to Graphite (Grafana's Input Source)"""
         if "PYTEST_CURRENT_TEST" in os.environ:
-            return True
-
-        result = requests.request(
-            method="POST",
-            url="https://graphite-us-central1.grafana.net/metrics",
-            data=json.dumps(data, separators=(",", ":")),
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": "Bearer {}".format(graphite_key),
-            },
-            timeout=60,
-        )
-        if result.ok:
-            print("Succesfully posted metric to Grafana")
+            print("Running tests, ignoring")
         else:
-            print(
-                "Unable to post metric to Grafana, responce is {}".format(result.json())
+            result = requests.request(
+                method="POST",
+                url=graphite_endpoint,
+                data=json.dumps(data, separators=(",", ":")),
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {graphite_key}",
+                },
+                timeout=60,
             )
+            if result.ok:
+                print("Succesfully posted metric to Grafana")
+            else:
+                print(f"Unable to post metric to Grafana, responce is {result.json()}")
 
 
 if __name__ == "__main__":
