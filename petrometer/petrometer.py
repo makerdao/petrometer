@@ -131,17 +131,27 @@ class Petrometer:
                     day.strftime("%Y-%m-%d"),
                     (len(day_transactions)),
                     (self.failed_transactions(day_transactions)),
-                    f"({self.percentage(self.failed_transactions(day_transactions) / len(day_transactions)):.1f})",
-                    f"{self.avg_gas_price(day_transactions):.1f} GWei",
-                    f"{self.avg_gas_cost(day_transactions):.8f} ETH",
+                    "(%.1f%%)"
+                    % self.percentage(
+                        self.failed_transactions(day_transactions)
+                        / len(day_transactions)
+                    ),
+                    "%.1f GWei" % self.avg_gas_price(day_transactions),
+                    "%.8f ETH" % self.avg_gas_cost(day_transactions),
                     (
-                        f"({self.format_usd(self.avg_gas_cost(day_transactions) * day_eth_price)})"
+                        "(%s)"
+                        % self.format_usd(
+                            self.avg_gas_cost(day_transactions) * day_eth_price
+                        )
                     )
                     if day_eth_price is not None
                     else "",
-                    f"{self.total_gas_cost(day_transactions):.8f} ETH",
+                    "%.8f ETH" % self.total_gas_cost(day_transactions),
                     (
-                        f"({self.format_usd(self.total_gas_cost(day_transactions) * day_eth_price)})"
+                        "(%s)"
+                        % self.format_usd(
+                            self.total_gas_cost(day_transactions) * day_eth_price
+                        )
                     )
                     if day_eth_price is not None
                     else "",
