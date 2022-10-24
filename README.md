@@ -31,24 +31,19 @@ pip3 install -r requirements.txt
 ## Usage
 
 ```
-usage: petrometer [-h] --etherscan-api-key ETHERSCAN_API_KEY --graphite-key GRAPHITE_KEY --graphite-endpoint GRAPHITE_ENDPOINT --alias SOME_ALIAS [-j] [-o OUTPUT]
-                  [-i]
-                  ADDRESSES [ADDRESSES ...]
+usage: petrometer [-h] --etherscan-api-key ETHERSCAN_API_KEY [--graphite-key GRAPHITE_KEY] [--graphite-endpoint GRAPHITE_ENDPOINT] [--alias SOME_ALIAS] [-j] [-o OUTPUT] [-i] ADDRESSES [ADDRESSES ...]
 
 positional arguments:
   ADDRESSES             Ethereum addresses to get the gas usage of
 
 optional arguments:
-  -h, --help            show this help message and exit
-  --etherscan-api-key ETHERSCAN_API_KEY
-                        Etherscan API key
-  --graphite-key GRAPHITE_KEY
-                        GraphiteDB key to publish metrics to Grafana
-  -j, --json            Generate result as JSON
-  -o OUTPUT, --output OUTPUT
-                        File to save the output to
-  -i, --incoming        Show incoming transaction gas usage, defaut outgoing
-
+  -h, --help                                show this help message and exit
+  --etherscan-api-key ETHERSCAN_API_KEY     Etherscan API key
+  --graphite-endpoint GRAPHITE_ENDPOINT     Endpoint of GraphiteDB to publish metrics to Grafana
+  --graphite-key GRAPHITE_KEY               GraphiteDB key to publish metrics to Grafana
+  -j, --json                                Generate result as JSON
+  -o OUTPUT, --output OUTPUT                File to save the output to
+  -i, --incoming                            Show incoming transaction gas usage, defaut outgoing
 ```
 
 Sample invocation:
